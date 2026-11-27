@@ -60,3 +60,10 @@ Crie manualmente no site do GitHub um repositório vazio chamado `EventosRua`. C
 git remote add origin URL_DO_REPOSITORIO
 git push -u origin main
 ```
+
+
+## APK pelo GitHub Actions
+
+O workflow **Gerar APK** roda a cada envio à branch `main`. Para rodar manualmente, abra a aba **Actions** do repositório, selecione **Gerar APK** e clique em **Run workflow**.
+
+Quando a execução terminar, abra o resumo e baixe **EventosRua.apk** em **Artifacts**. Abra o arquivo no smartphone Android para instalar. O APK usa a assinatura de depuração do Gradle e pode ser instalado diretamente no aparelho.
