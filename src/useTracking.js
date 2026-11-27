@@ -24,19 +24,23 @@ function locationError(code) {
   }
 }
 
-async function hasLocationPermission() {
+async function getHighAccuracy() {
   if (!native) {
     // O próprio navegador solicita permissão ao iniciar o monitoramento.
-    if (!navigator.permissions) return true;
     const permission = await Geolocation.checkPermissions().catch(() => null);
-    return permission?.location !== 'denied';
+    if (permission?.location === 'denied') throw new Error(deniedMessage);
+    return true;
   }
 
   let permission = await Geolocation.checkPermissions();
-  if (permission.location.startsWith('prompt') || permission.coarseLocation.startsWith('prompt')) {
+  if (permission.coarseLocation !== 'granted' &&
+      (permission.location.startsWith('prompt') || permission.coarseLocation.startsWith('prompt'))) {
     permission = await Geolocation.requestPermissions();
   }
-  return permission.location === 'granted' || permission.coarseLocation === 'granted';
+
+  if (permission.location === 'granted') return true;
+  if (permission.coarseLocation === 'granted') return false;
+  throw new Error(deniedMessage);
 }
 
 export function useTracking() {
@@ -109,11 +113,11 @@ export function useTracking() {
         throw new Error('A localização no navegador precisa de HTTPS ou localhost.');
       }
 
-      if (!(await hasLocationPermission())) throw new Error(deniedMessage);
+      const enableHighAccuracy = await getHighAccuracy();
       if (session.cancelled) return null;
 
       return Geolocation.watchPosition(
-        { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 },
+        { enableHighAccuracy, timeout: 15000, maximumAge: 0 },
         (position, failure) => {
           if (session.cancelled || !mounted.current) return;
 
